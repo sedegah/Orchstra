@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orchestra — Personal Exam Timetable</title>
+  <meta name="description" content="Orchestra automatically generates your personal University of Ghana examination timetable." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+:root{
+  /* Lighter, richer University Navy Blue & Regal Gold */
+  --bg:          #0F1B38;
+  --bg2:         #15254D;
+  --bg3:         #1C3063;
+  --card:        #182B57;
+  --card2:       #203870;
+  --border:      #2A488B;
+  --border-focus:#E5C07B;
+  --gold:        #E5C07B;
+  --gold-light:  #FDE68A;
+  --gold-muted:  #D4AF37;
+  --royal-blue:  #2563EB;
+  --royal-light: #60A5FA;
+  --text:        #F8FAFC;
+  --text-dim:    #CBD5E1;
+  --muted:       #94A3B8;
+  --green:       #10B981;
+  --red:         #F43F5E;
+  --radius:      16px;
+  --radius-sm:   10px;
+  --shadow:      0 12px 40px -8px rgba(10,20,50,0.6);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Plus Jakarta Sans",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+.orbs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(95px);opacity:.18;animation:drift 20s infinite ease-in-out alternate}
+.orb1{width:520px;height:520px;background:#3B82F6;top:-180px;left:-100px}
+.orb2{width:460px;height:460px;background:#E5C07B;bottom:-140px;right:-100px;animation-delay:-8s}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(50px,30px) scale(1.08)}}
+.wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:0 24px 80px}
+
+/* ── Brand Nav ── */
+nav{display:flex;align-items:center;justify-content:space-between;padding:28px 0 10px}
+.brand{display:flex;flex-direction:column;text-decoration:none;user-select:none}
+.brand-name{font-size:1.45rem;font-weight:800;letter-spacing:-0.035em;color:#fff}
+.brand-name span{color:var(--gold)}
+.brand-tag{font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold-light);margin-top:2px}
+.badge{font-size:.72rem;background:rgba(229,192,123,.12);color:var(--gold-light);border:1px solid rgba(229,192,123,.35);border-radius:20px;padding:4px 12px;font-weight:600}
+
+/* ── Hero ── */
+.hero{text-align:center;padding:46px 0 32px}
+.hero-tag{display:inline-block;font-size:.78rem;color:var(--gold-light);background:rgba(229,192,123,.12);border:1px solid rgba(229,192,123,.3);border-radius:20px;padding:5px 14px;margin-bottom:18px;font-weight:700;letter-spacing:0.04em}
+h1{font-size:clamp(2.1rem,5.2vw,3.1rem);font-weight:800;line-height:1.12;letter-spacing:-0.035em;margin-bottom:14px}
+.grad-gold{background:linear-gradient(135deg,#FFFFFF 0%,#FEF08A 50%,#E5C07B 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:.98rem;color:var(--text-dim);line-height:1.65;max-width:580px;margin:0 auto 26px}
+
+/* ── Tab Switcher ── */
+.tab-switch{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:4px;max-width:480px;margin:0 auto 28px}
+.tab-btn{flex:1;padding:10px 16px;background:none;border:none;border-radius:8px;color:var(--text-dim);font-family:"Plus Jakarta Sans",sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
+.tab-btn.active{background:var(--card2);color:#fff;border:1px solid rgba(229,192,123,.35);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+
+/* ── Form Card ── */
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);transition:border-color .3s}
+.form-card:hover{border-color:rgba(229,192,123,.4)}
+.form-section{margin-bottom:22px}
+.form-label{display:block;font-size:.78rem;font-weight:700;color:var(--gold-light);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+input[type=text]{width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:"JetBrains Mono",monospace;font-size:.95rem;padding:13px 16px;transition:border-color .2s,box-shadow .2s;outline:none}
+input[type=text]:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(229,192,123,.22)}
+input::placeholder{color:var(--muted);font-family:"Plus Jakarta Sans",sans-serif;font-size:.88rem}
+
+/* ── Dropzone ── */
+.dropzone{
+  border:2px dashed var(--border);border-radius:var(--radius-sm);padding:26px 20px;text-align:center;
+  background:var(--bg2);cursor:pointer;transition:all .2s;position:relative;
+}
+.dropzone:hover, .dropzone.dragover{border-color:var(--gold);background:rgba(229,192,123,.08)}
+.dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dropzone-title{font-size:.92rem;font-weight:700;color:var(--text);margin-bottom:4px}
+.dropzone-sub{font-size:.78rem;color:var(--text-dim)}
+.dropzone-file{font-family:"JetBrains Mono",monospace;font-size:.85rem;color:var(--gold-light);margin-top:8px;font-weight:600;display:none}
+
+.courses-box{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-sm);min-height:96px;padding:10px 12px;transition:border-color .2s,box-shadow .2s;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;cursor:text}
+.courses-box:focus-within{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(229,192,123,.22)}
+.chip{display:flex;align-items:center;gap:6px;background:rgba(229,192,123,.15);border:1px solid rgba(229,192,123,.4);border-radius:7px;padding:5px 10px;font-family:"JetBrains Mono",monospace;font-size:.84rem;color:var(--gold-light);animation:chipIn .2s ease}
+@keyframes chipIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.chip-del{cursor:pointer;color:var(--text-dim);font-size:13px;line-height:1;transition:color .15s}
+.chip-del:hover{color:var(--red)}
+.ci{background:none;border:none;outline:none;color:var(--text);font-family:"JetBrains Mono",monospace;font-size:.88rem;min-width:140px;flex:1}
+.hint{font-size:.76rem;color:var(--text-dim);margin-top:8px}
+.hint kbd{background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:.7rem;color:var(--gold-light)}
+.btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,#D4AF37 0%,#E5C07B 50%,#CA8A04 100%);border:none;border-radius:var(--radius-sm);color:#0F1B38;font-family:"Plus Jakarta Sans",sans-serif;font-size:.95rem;font-weight:800;letter-spacing:0.02em;cursor:pointer;transition:all .2s;box-shadow:0 6px 22px rgba(229,192,123,.35);display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 28px rgba(229,192,123,.55)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.spinner{width:18px;height:18px;border:2px solid rgba(15,27,56,.3);border-top-color:#0F1B38;border-radius:50%;animation:spin .7s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.3);border-radius:var(--radius-sm);padding:12px 16px;color:#FDA4AF;font-size:.85rem;display:none;margin-top:16px}
+
+/* ── Results ── */
+#results{display:none;margin-top:40px;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.rh{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.rt{font-size:1.25rem;font-weight:800;letter-spacing:-.02em}
+.rm{font-size:.82rem;color:var(--text-dim);margin-top:2px}
+.abtns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-o{padding:9px 16px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:transparent;color:var(--text);font-family:"Plus Jakarta Sans",sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-o:hover{border-color:var(--gold);color:var(--gold-light);background:rgba(229,192,123,.1)}
+.btn-pdf{padding:9px 18px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#D4AF37,#E5C07B);border:none;color:#0F1B38;font-family:"Plus Jakarta Sans",sans-serif;font-size:.82rem;font-weight:800;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(229,192,123,.3)}
+.btn-pdf:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(229,192,123,.45)}
+
+/* ── Next Exam Card ── */
+.next-exam{background:linear-gradient(135deg,rgba(229,192,123,.15),rgba(37,99,235,.22));border:1px solid rgba(229,192,123,.4);border-radius:var(--radius);padding:22px 26px;margin-bottom:20px;position:relative;overflow:hidden}
+.next-exam::before{content:"";position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#D4AF37,#FDE68A,#3B82F6)}
+.nl{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold-light);font-weight:800;margin-bottom:6px}
+.nc{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;color:#fff}
+.nt{font-size:.88rem;color:var(--text-dim);margin:2px 0 10px}
+.nd{display:flex;flex-wrap:wrap;gap:20px}
+.ndi{font-size:.85rem;color:var(--text)}
+.ndi span{color:var(--gold);margin-right:4px;font-weight:600}
+
+/* ── Clean Table ── */
+.tw{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);background:var(--card)}
+table{width:100%;border-collapse:collapse;text-align:left}
+thead tr{background:var(--card2);border-bottom:2px solid rgba(229,192,123,.35)}
+thead th{padding:14px 18px;font-size:.74rem;text-transform:uppercase;letter-spacing:.09em;color:var(--gold-light);font-weight:800;white-space:nowrap}
+tbody tr{border-top:1px solid var(--border);transition:background .15s}
+tbody tr:hover{background:rgba(229,192,123,.06)}
+tbody td{padding:14px 18px;font-size:.86rem;vertical-align:top}
+
+/* Column Specifics */
+.td-date{font-weight:600;color:#fff;white-space:nowrap;min-width:130px}
+.td-time{font-family:"JetBrains Mono",monospace;font-weight:600;color:var(--gold-light);white-space:nowrap;min-width:95px}
+.td-code{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:.9rem;color:#fff;white-space:nowrap;min-width:95px}
+.td-title{color:var(--text);font-weight:500;min-width:180px;line-height:1.45}
+.td-venue{color:var(--text-dim);font-size:.84rem;min-width:160px;line-height:1.4}
+.venue-main{font-weight:600;color:var(--text)}
+.venue-toggle{display:inline-block;font-size:.74rem;color:var(--gold-light);background:rgba(229,192,123,.12);border:1px solid rgba(229,192,123,.3);padding:2px 8px;border-radius:4px;margin-top:6px;cursor:pointer}
+.venue-toggle:hover{background:rgba(229,192,123,.22)}
+.venue-list{display:none;margin-top:8px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:.76rem;color:var(--text-dim);max-height:180px;overflow-y:auto}
+.venue-list ul{list-style:none;padding:0;margin:0}
+.venue-list li{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.venue-list li:last-child{border-bottom:none}
+.venue-list .vname{color:var(--text);font-weight:500}
+.venue-list .vrange{font-family:"JetBrains Mono",monospace;color:var(--gold-light);margin-left:6px}
+
+.nfl{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.nfi{display:flex;align-items:center;gap:10px;background:rgba(244,63,94,.06);border:1px solid rgba(244,63,94,.18);border-radius:var(--radius-sm);padding:12px 16px;font-family:"JetBrains Mono",monospace;font-size:.85rem;color:#FDA4AF}
+footer{text-align:center;padding-top:60px;font-size:.78rem;color:var(--muted)}
+footer a{color:var(--gold-light);text-decoration:none}
+@media(max-width:700px){.form-card{padding:24px 18px}.hero{padding:36px 0 24px}h1{font-size:1.9rem}}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HIGH-END PRINT STYLESHEET (Personal Timetable)
+   ══════════════════════════════════════════════════════════════════════════ */
+.print-header{display:none}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 15mm 15mm 15mm 15mm;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-size: 10pt !important;
+    line-height: 1.3 !important;
+  }
+
+  .orbs, nav, .hero, .tab-switch, #fc, .abtns, .venue-toggle, .venue-list, footer, #nfs {
+    display: none !important;
+  }
+
+  .wrap {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #results {
+    display: block !important;
+    margin-top: 0 !important;
+  }
+
+  .print-header {
+    display: block !important;
+    border-bottom: 2.5pt solid #D4AF37;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+
+  .print-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .print-title {
+    font-size: 17pt !important;
+    font-weight: 800 !important;
+    color: #0F1B38 !important;
+    letter-spacing: -0.02em;
+  }
+
+  .print-sub {
+    font-size: 9pt !important;
+    color: #475569 !important;
+    margin-top: 2px;
+    font-weight: 600;
+  }
+
+  .print-meta-grid {
+    display: flex;
+    gap: 24px;
+    margin-top: 10px;
+    background: #FDFBF7;
+    border: 1pt solid #EADDC9;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 9pt;
+  }
+
+  .print-meta-item strong {
+    color: #0F1B38;
+  }
+
+  .rh {
+    display: none !important;
+  }
+
+  .next-exam {
+    background: #F8F6F0 !important;
+    border: 1.5pt solid #D4AF37 !important;
+    border-radius: 6px !important;
+    padding: 10px 14px !important;
+    margin-bottom: 14px !important;
+    color: #0F1B38 !important;
+    page-break-inside: avoid;
+  }
+
+  .next-exam::before {
+    display: none !important;
+  }
+
+  .nl {
+    color: #B45309 !important;
+    font-size: 7.5pt !important;
+    font-weight: 800 !important;
+  }
+
+  .nc {
+    font-size: 13pt !important;
+    color: #0F1B38 !important;
+    font-weight: 800 !important;
+  }
+
+  .nt {
+    font-size: 8.5pt !important;
+    color: #475569 !important;
+    margin-bottom: 6px !important;
+  }
+
+  .nd {
+    gap: 16px !important;
+  }
+
+  .ndi {
+    font-size: 8.5pt !important;
+    color: #0F1B38 !important;
+  }
+
+  .tw {
+    border: 1pt solid #CBD5E1 !important;
+    border-radius: 4px !important;
+    background: #FFFFFF !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  thead tr {
+    background: #0F1B38 !important;
+    border-bottom: 2pt solid #D4AF37 !important;
+  }
+
+  thead th {
+    color: #FFFFFF !important;
+    font-size: 8pt !important;
+    font-weight: 800 !important;
+    padding: 8px 10px !important;
+    text-transform: uppercase !important;
+  }
+
+  tbody tr {
+    border-top: 1pt solid #E2E8F0 !important;
+    page-break-inside: avoid;
+  }
+
+  tbody tr:nth-child(even) {
+    background: #FDFBF7 !important;
+  }
+
+  tbody td {
+    padding: 8px 10px !important;
+    font-size: 8.5pt !important;
+    color: #1E293B !important;
+  }
+
+  .td-date {
+    color: #0F1B38 !important;
+    font-weight: 700 !important;
+  }
+
+  .td-time {
+    color: #B45309 !important;
+    font-weight: 700 !important;
+  }
+
+  .td-code {
+    color: #0F1B38 !important;
+    font-weight: 800 !important;
+  }
+
+  .td-title {
+    color: #334155 !important;
+  }
+
+  .td-venue, .venue-main {
+    color: #0F1B38 !important;
+    font-weight: 600 !important;
+  }
+
+  .print-footer {
+    display: flex !important;
+    justify-content: space-between;
+    margin-top: 20px;
+    font-size: 7.5pt;
+    color: #64748B;
+    border-top: 1pt solid #E2E8F0;
+    padding-top: 8px;
+  }
+}
+  </style>
+</head>
+<body>
+<div class="orbs"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<div class="wrap">
+  <nav>
+    <div class="brand">
+      <div class="brand-name">Orch<span>estra</span></div>
+      <div class="brand-tag">UG Timetable Assistant</div>
+    </div>
+    <span class="badge">Academic Year 2026</span>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-tag">Personal Timetable Assistant</div>
+    <h1>Your Exams,<br><span class="grad-gold">Perfectly Coordinated</span></h1>
+    <p class="hero-sub">Generate your personalized examination timetable directly from the official STS Timetable App with your student ID, or by uploading the general Timetable PDF.</p>
+  </section>
+
+  <!-- Mode Switcher -->
+  <div class="tab-switch">
+    <button type="button" class="tab-btn active" id="tab-portal" onclick="setMode('portal')">STS Timetable App</button>
+    <button type="button" class="tab-btn" id="tab-pdf" onclick="setMode('pdf')">Upload Timetable PDF</button>
+  </div>
+
+  <div class="form-card" id="fc">
+    <form id="form" autocomplete="off">
+      
+      <!-- Mode: STS Timetable App Index Number -->
+      <div class="form-section" id="sec-index">
+        <label class="form-label" for="idx">Student Index Number</label>
+        <input type="text" id="idx" placeholder="e.g. 22469044" maxlength="20" />
+      </div>
+
+      <!-- Mode: PDF File Upload -->
+      <div class="form-section" id="sec-pdf" style="display:none">
+        <label class="form-label">Timetable PDF Document</label>
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="pdf-input" accept="application/pdf" />
+          <div class="dropzone-title">Choose or drag & drop timetable PDF</div>
+          <div class="dropzone-sub">No index number required — Orchestra extracts your courses directly</div>
+          <div class="dropzone-file" id="pdf-name"></div>
+        </div>
+      </div>
+
+      <!-- Course Codes (Both Modes) -->
+      <div class="form-section">
+        <label class="form-label">Registered Course Codes</label>
+        <div class="courses-box" id="cbox">
+          <input type="text" class="ci" id="ci" placeholder="Type a course code and press Enter or comma..." autocomplete="off" />
+        </div>
+        <p class="hint">Press <kbd>Enter</kbd> or <kbd>,</kbd> to add &bull; <kbd>Backspace</kbd> removes last &bull; Paste a list to add multiple</p>
+      </div>
+
+      <button type="submit" class="btn-primary" id="gbtn">
+        <div class="spinner" id="spin"></div>
+        <span id="btxt">Generate My Timetable</span>
+      </button>
+      <div class="err" id="err"></div>
+    </form>
+  </div>
+
+  <div id="results">
+    <!-- Dedicated Print Header -->
+    <div class="print-header">
+      <div class="print-header-top">
+        <div>
+          <div class="print-title">ORCHESTRA</div>
+          <div class="print-sub">Personal Examination Timetable &bull; University of Ghana</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:8.5pt;font-weight:700;color:#B45309">Academic Year 2026</div>
+          <div style="font-size:7.5pt;color:#64748B" id="print-timestamp">Generated: 2026</div>
+        </div>
+      </div>
+      <div class="print-meta-grid">
+        <div class="print-meta-item"><span>Student / Source:</span> <strong id="print-meta-id">—</strong></div>
+        <div class="print-meta-item"><span>Total Examinations:</span> <strong id="print-meta-total">0</strong></div>
+      </div>
+    </div>
+
+    <!-- Screen Results Header -->
+    <div class="rh">
+      <div><div class="rt" id="rtitle">Your Personal Examination Timetable</div><div class="rm" id="rmeta"></div></div>
+      <div class="abtns">
+        <button class="btn-o" id="newbtn">New Search</button>
+        <button class="btn-o" onclick="triggerPrint()">Print</button>
+        <button class="btn-pdf" id="pdfbtn">Download PDF</button>
+      </div>
+    </div>
+
+    <div class="next-exam" id="nex" style="display:none">
+      <div class="nl">Next Examination</div>
+      <div class="nc" id="nec"></div><div class="nt" id="net"></div>
+      <div class="nd">
+        <div class="ndi"><span>Date:</span> <strong id="ned"></strong></div>
+        <div class="ndi"><span>Time:</span> <strong id="nem"></strong></div>
+        <div class="ndi"><span>Venue / Mode:</span> <strong id="nev"></strong></div>
+      </div>
+    </div>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>DATE</th><th>TIME</th><th>COURSE</th><th>COURSE TITLE</th><th>VENUE / MODE</th></tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+
+    <div id="nfs" style="display:none;margin-top:28px">
+      <div class="rt" style="font-size:1rem;color:var(--text-dim)">Courses Not Found</div>
+      <div class="nfl" id="nfl"></div>
+    </div>
+
+    <div class="print-footer" style="display:none">
+      <div>Orchestra &bull; sts.ug.edu.gh</div>
+      <div>Personal Examination Timetable</div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Orchestra &mdash; <a href="#">Personal Examination Timetable Assistant</a></p>
+    <p style="margin-top:6px">sts.ug.edu.gh &bull; 2026</p>
+  </footer>
+</div>
+
+<script>
+var currentMode = "portal";
+var courses = [], lastPay = null, lastEntries = [];
+var ci = document.getElementById("ci"), cbox = document.getElementById("cbox");
+
+function setMode(mode){
+  currentMode = mode;
+  document.getElementById("tab-portal").className = "tab-btn " + (mode === "portal" ? "active" : "");
+  document.getElementById("tab-pdf").className = "tab-btn " + (mode === "pdf" ? "active" : "");
+  document.getElementById("sec-index").style.display = mode === "portal" ? "block" : "none";
+  document.getElementById("sec-pdf").style.display = mode === "pdf" ? "block" : "none";
+  document.getElementById("btxt").textContent = mode === "portal" ? "Generate My Timetable" : "Extract From PDF";
+  hideErr();
+}
+
+var pdfInput = document.getElementById("pdf-input");
+var pdfName = document.getElementById("pdf-name");
+pdfInput.addEventListener("change", function(){
+  if(pdfInput.files.length > 0){
+    pdfName.textContent = "Selected: " + pdfInput.files[0].name;
+    pdfName.style.display = "block";
+  } else {
+    pdfName.style.display = "none";
+  }
+});
+
+function norm(s){return s.replace(/\s+/g,"").toUpperCase()}
+function add(r){var c=norm(r);if(!c||courses.includes(c))return;courses.push(c);render()}
+function del(c){courses=courses.filter(function(x){return x!==c});render()}
+function render(){
+  cbox.querySelectorAll(".chip").forEach(function(x){x.remove()});
+  courses.forEach(function(c){
+    var d=document.createElement("div");d.className="chip";
+    d.innerHTML=c+"<span class=\"chip-del\" data-c=\""+c+"\">x</span>";
+    cbox.insertBefore(d,ci);
+  });
+  cbox.querySelectorAll(".chip-del").forEach(function(b){
+    b.addEventListener("click",function(){del(b.dataset.c)});
+  });
+}
+ci.addEventListener("keydown",function(e){
+  if(["Enter",","," "].includes(e.key)){e.preventDefault();var v=ci.value.trim().replace(/,/g,"");if(v)add(v);ci.value="";}
+  if(e.key==="Backspace"&&!ci.value&&courses.length){courses.pop();render();}
+});
+ci.addEventListener("paste",function(e){
+  e.preventDefault();
+  var t=(e.clipboardData||window.clipboardData).getData("text");
+  t.split(/[\n,\s]+/).forEach(function(p){if(p.trim())add(p.trim())});ci.value="";
+});
+ci.addEventListener("blur",function(){var v=ci.value.trim();if(v){add(v);ci.value=""}});
+cbox.addEventListener("click",function(){ci.focus()});
+
+function setLoad(on){
+  document.getElementById("gbtn").disabled=on;
+  document.getElementById("spin").style.display=on?"block":"none";
+  document.getElementById("btxt").textContent=on?(currentMode==="portal"?"Searching STS Timetable App...":"Parsing timetable PDF..."):(currentMode==="portal"?"Generate My Timetable":"Extract From PDF");
+}
+function showErr(m){var e=document.getElementById("err");e.style.display="block";e.textContent=m}
+function hideErr(){document.getElementById("err").style.display="none"}
+
+document.getElementById("form").addEventListener("submit",async function(e){
+  e.preventDefault();hideErr();
+  var typed=ci.value.trim();if(typed){add(typed);ci.value=""}
+  if(!courses.length){showErr("Please add at least one course code.");return}
+
+  if(currentMode === "portal"){
+    var idx = document.getElementById("idx").value.trim();
+    if(!idx){showErr("Please enter your index number for STS Timetable App matching.");return}
+    setLoad(true);document.getElementById("results").style.display="none";
+    var pay = {index_number: idx, course_codes: courses};
+    lastPay = pay;
+    try{
+      var r = await fetch("/api/timetable/generate/", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(pay)});
+      var d = await r.json();
+      if(!r.ok){showErr(d.error||"Server error "+r.status);setLoad(false);return}
+      lastEntries = d.entries || [];
+      show(idx, d);
+    }catch(er){showErr("Network error: "+er.message)}
+    setLoad(false);
+  } else {
+    if(!pdfInput.files || pdfInput.files.length === 0){
+      showErr("Please choose a timetable PDF file to upload.");return;
+    }
+    setLoad(true);document.getElementById("results").style.display="none";
+    var formData = new FormData();
+    formData.append("pdf_file", pdfInput.files[0]);
+    formData.append("course_codes", JSON.stringify(courses));
+    try{
+      var r = await fetch("/api/timetable/upload-pdf/", {method:"POST", body:formData});
+      var d = await r.json();
+      if(!r.ok){showErr(d.error||"PDF error "+r.status);setLoad(false);return}
+      lastPay = {index_number: "PDF Timetable", entries: d.entries};
+      lastEntries = d.entries || [];
+      show("PDF Timetable", d);
+    }catch(er){showErr("Upload error: "+er.message)}
+    setLoad(false);
+  }
+});
+
+function formatVenueCell(e, idx){
+  var allocs = e.allocations || [];
+  var html = "<div class=\"venue-main\">" + (e.venue || "TBD") + "</div>";
+  if(allocs.length > 1){
+    var listId = "vl-" + idx;
+    html += "<div class=\"venue-toggle\" onclick=\"var el=document.getElementById('" + listId + "');el.style.display=el.style.display==='block'?'none':'block';\">View all " + allocs.length + " venue ranges</div>";
+    html += "<div class=\"venue-list\" id=\"" + listId + "\"><ul>";
+    allocs.forEach(function(a){
+      var rText = (a.range_start && a.range_end) ? " [" + a.range_start + " - " + a.range_end + "]" : "";
+      html += "<li><span class=\"vname\">" + a.venue + "</span><span class=\"vrange\">" + rText + "</span></li>";
+    });
+    html += "</ul></div>";
+  }
+  return html;
+}
+
+function parseExamDateObj(e){
+  if(!e || !e.exam_date) return null;
+  try {
+    var ds = e.exam_date;
+    var ts = e.exam_time || "12:00 AM";
+    var d = new Date(ds + " " + ts);
+    if(!isNaN(d.getTime())) return d;
+    var d2 = new Date(ds);
+    if(!isNaN(d2.getTime())) return d2;
+  } catch(err){}
+  return null;
+}
+
+function show(idx, data){
+  var entries = data.entries || [];
+  var missing = courses.filter(function(c){return!entries.some(function(e){return e.course_code===c})});
+  document.getElementById("rtitle").textContent = "Your Personal Examination Timetable";
+  document.getElementById("rmeta").textContent = idx + " \u00b7 " + entries.length + " exam" + (entries.length!==1?"s":"") + " found \u00b7 Sorted chronologically";
+  
+  // Update Print Header Metadata
+  document.getElementById("print-meta-id").textContent = idx;
+  document.getElementById("print-meta-total").textContent = entries.length;
+  document.getElementById("print-timestamp").textContent = "Generated: " + new Date().toLocaleDateString(undefined, {weekday:'short', year:'numeric', month:'short', day:'numeric'});
+
+  // Find the FIRST upcoming exam that occurs AFTER current date & time
+  var now = new Date();
+  var nextExam = null;
+  for(var k=0; k<entries.length; k++){
+    var exDate = parseExamDateObj(entries[k]);
+    if(exDate && exDate >= now){
+      nextExam = entries[k];
+      break;
+    }
+  }
+  // Fallback: if all dates are in the future or date parsing fails, use the first entry
+  if(!nextExam && entries.length > 0){
+    nextExam = entries[0];
+  }
+
+  if(nextExam){
+    document.getElementById("nex").style.display = "block";
+    document.getElementById("nec").textContent = nextExam.course_code;
+    document.getElementById("net").textContent = nextExam.course_title || "";
+    document.getElementById("ned").textContent = nextExam.exam_date || "\u2014";
+    document.getElementById("nem").textContent = nextExam.exam_time || "\u2014";
+    document.getElementById("nev").textContent = nextExam.venue || "To be determined";
+  } else {
+    document.getElementById("nex").style.display = "none";
+  }
+
+  var tb = document.getElementById("tb");tb.innerHTML = "";
+  entries.forEach(function(e, i){
+    var tr = document.createElement("tr");
+    tr.innerHTML = "<td class=\"td-date\">" + (e.exam_date||"\u2014") + "</td><td class=\"td-time\">" + (e.exam_time||"\u2014") + "</td><td class=\"td-code\">" + e.course_code + "</td><td class=\"td-title\">" + (e.course_title||"\u2014") + "</td><td class=\"td-venue\">" + formatVenueCell(e, i) + "</td>";
+    tb.appendChild(tr);
+  });
+
+  var nfs = document.getElementById("nfs"), nfl = document.getElementById("nfl");
+  if(missing.length > 0){
+    nfs.style.display = "block";
+    nfl.innerHTML = missing.map(function(c){return "<div class=\"nfi\">" + c + " \u2014 Not found in the timetable</div>"}).join("");
+  } else {
+    nfs.style.display = "none";
+  }
+  document.getElementById("results").style.display = "block";
+  document.getElementById("results").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function triggerPrint(){
+  if(!lastEntries.length && document.getElementById("results").style.display === "none"){
+    alert("Please generate or extract a timetable first before printing.");
+    return;
+  }
+  window.print();
+}
+
+document.getElementById("pdfbtn").addEventListener("click", async function(){
+  if(!lastPay && !lastEntries.length) return;
+  var btn = this; btn.textContent = "Generating PDF..."; btn.disabled = true;
+  try{
+    var r = await fetch("/api/timetable/pdf/", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        index_number: (lastPay && lastPay.index_number) ? lastPay.index_number : "PDF Timetable",
+        entries: lastEntries,
+        course_codes: courses
+      })
+    });
+    var b = await r.blob();
+    var u = URL.createObjectURL(b);
+    var a = document.createElement("a");
+    a.href = u;
+    var filename = (lastPay && lastPay.index_number && lastPay.index_number !== "PDF Timetable") ? "orchestra-" + lastPay.index_number + ".pdf" : "orchestra-personal-timetable.pdf";
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(u);
+  }catch(er){alert("PDF error: "+er.message)}
+  btn.textContent = "Download PDF"; btn.disabled = false;
+});
+
+document.getElementById("newbtn").addEventListener("click", function(){
+  document.getElementById("results").style.display = "none";
+  document.getElementById("fc").scrollIntoView({behavior:"smooth"});
+});
+</script>
+</body>
+</html>
