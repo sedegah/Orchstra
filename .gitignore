@@ -18,3 +18,5 @@ Thumbs.db
 *.bak
 media/
 staticfiles/
+command.md
+
